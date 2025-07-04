@@ -1,0 +1,11 @@
+{
+  "template": "vital_signs_monitoring",
+  "fields": {
+    "temperature": { "privacy": "non-PHI" },
+    "pulse": { "privacy": "non-PHI" },
+    "patient_name": {
+      "privacy": "PHI",
+      "access": ["ROLE_DOCTOR"]
+    }
+  }
+}
