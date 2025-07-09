@@ -1,0 +1,106 @@
+# version: '2.4'
+
+services:
+
+  orderer.example.com:
+    container_name: orderer.example.com
+    image: hyperledger/fabric-orderer:2.5
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/fabric/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/fabric/tls/server.crt
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/fabric/tls/server.key
+      - ORDERER_GENERAL_TLS_ROOTCAS=/etc/hyperledger/fabric/tls/ca.crt
+    volumes:
+      - ./organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls:/etc/hyperledger/fabric/tls
+      - ./system-genesis-block/genesis.block:/etc/hyperledger/fabric/genesisblock
+    ports:
+      - 7050:7050
+    networks:
+      - fabric
+
+  peer0.orguser.example.com:
+    container_name: peer0.orguser.example.com
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - CORE_PEER_ID=peer0.orguser.example.com
+      - CORE_PEER_ADDRESS=peer0.orguser.example.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.orguser.example.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_LOCALMSPID=OrgUserMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    volumes:
+      - ./organizations/peerOrganizations/orguser.example.com/users:/etc/hyperledger/fabric/users
+      - ./channel-artifacts:/etc/hyperledger/fabric/channel-artifacts
+      - ./organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/ca.crt:/etc/hyperledger/fabric/tls/ca.crt
+      - ./organizations/peerOrganizations/orguser.example.com/peers/peer0.orguser.example.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/orguser.example.com/peers/peer0.orguser.example.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 7051:7051
+    networks:
+      - fabric
+
+  peer0.orgviewer.example.com:
+    container_name: peer0.orgviewer.example.com
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - CORE_PEER_ID=peer0.orgviewer.example.com
+      - CORE_PEER_ADDRESS=peer0.orgviewer.example.com:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.orgviewer.example.com:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+      - CORE_PEER_LOCALMSPID=OrgViewerMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    volumes:
+      - ./organizations/peerOrganizations/orgviewer.example.com/users:/etc/hyperledger/fabric/users
+      - ./organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/ca.crt:/etc/hyperledger/fabric/tls/ca.crt
+      - ./channel-artifacts:/etc/hyperledger/fabric/channel-artifacts
+      - ./organizations/peerOrganizations/orgviewer.example.com/peers/peer0.orgviewer.example.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/orgviewer.example.com/peers/peer0.orgviewer.example.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 9051:9051
+    networks:
+      - fabric
+
+  peer0.orgadmin.example.com:
+    container_name: peer0.orgadmin.example.com
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - CORE_PEER_ID=peer0.orgadmin.example.com
+      - CORE_PEER_ADDRESS=peer0.orgadmin.example.com:11051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:11051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.orgadmin.example.com:11052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:11052
+      - CORE_PEER_LOCALMSPID=OrgAdminMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    volumes:
+      - ./organizations/peerOrganizations/orgadmin.example.com/users:/etc/hyperledger/fabric/users
+      - ./organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/ca.crt:/etc/hyperledger/fabric/tls/ca.crt
+      - ./channel-artifacts:/etc/hyperledger/fabric/channel-artifacts
+      - ./organizations/peerOrganizations/orgadmin.example.com/peers/peer0.orgadmin.example.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/orgadmin.example.com/peers/peer0.orgadmin.example.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 11051:11051
+    networks:
+      - fabric
+
+networks:
+  fabric:

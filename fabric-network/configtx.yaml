@@ -1,0 +1,196 @@
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: organizations/ordererOrganizations/example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+    OrdererEndpoints:
+      - orderer.example.com:7050
+
+  - &OrgUser
+    Name: OrgUserMSP
+    ID: OrgUserMSP
+    MSPDir: organizations/peerOrganizations/orguser.example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrgUserMSP.admin', 'OrgUserMSP.peer', 'OrgUserMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrgUserMSP.admin', 'OrgUserMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrgUserMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('OrgUserMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.orguser.example.com
+        Port: 7051
+
+  - &OrgViewer
+    Name: OrgViewerMSP
+    ID: OrgViewerMSP
+    MSPDir: organizations/peerOrganizations/orgviewer.example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrgViewerMSP.admin', 'OrgViewerMSP.peer', 'OrgViewerMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrgViewerMSP.admin', 'OrgViewerMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrgViewerMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('OrgViewerMSP.peer')" 
+    AnchorPeers:
+      - Host: peer0.orgviewer.example.com
+        Port: 9051
+
+  - &OrgAdmin
+    Name: OrgAdminMSP
+    ID: OrgAdminMSP
+    MSPDir: organizations/peerOrganizations/orgadmin.example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrgAdminMSP.admin', 'OrgAdminMSP.peer', 'OrgAdminMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrgAdminMSP.admin', 'OrgAdminMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrgAdminMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('OrgAdminMSP.peer')" 
+    AnchorPeers:
+      - Host: peer0.orgadmin.example.com
+        Port: 11051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+  Orderer: &OrdererCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses:
+    - orderer.example.com:7050
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  EtcdRaft:
+    Consenters:
+      - Host: orderer.example.com
+        Port: 7050
+        ClientTLSCert: organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+        ServerTLSCert: organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+  Capabilities:
+    <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+
+  GenesisProfile:
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *OrgUser
+          - *OrgViewer
+          - *OrgAdmin
+    Policies:
+      Readers:
+        Type: ImplicitMeta
+        Rule: "ANY Readers"
+      Writers:
+        Type: ImplicitMeta
+        Rule: "ANY Writers"
+      Admins:
+        Type: ImplicitMeta
+        Rule: "MAJORITY Admins"
+    Capabilities:
+      <<: *ChannelCapabilities
+
+  EHRChannel:
+    Consortium: SampleConsortium
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *OrgUser
+        - *OrgViewer
+        - *OrgAdmin
+      Capabilities:
+        <<: *ApplicationCapabilities
+    Policies:
+      Readers:
+        Type: ImplicitMeta
+        Rule: "ANY Readers"
+      Writers:
+        Type: ImplicitMeta
+        Rule: "ANY Writers"
+      Admins:
+        Type: ImplicitMeta
+        Rule: "MAJORITY Admins"
